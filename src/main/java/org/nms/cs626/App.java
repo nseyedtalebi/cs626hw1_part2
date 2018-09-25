@@ -16,6 +16,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.List;
 
 import static org.apache.commons.csv.CSVParser.parse;
@@ -56,10 +57,13 @@ public class App extends Configured implements Tool {
         }
     }
 
-   // public static class Reduce extends Reducer{
-        //@Override
-       // public void reduce() {
+    public static class Reduce extends Reducer<OrderedPair
+            ,Collection<IntWritable>
+            ,OrderedPair
+            ,IntWritable>{
+        public void reduce(OrderedPair keyin, Collection<IntWritable> valueIn,
+                           Mapper.Context mockContext) {
 
-       // }
-    //}
+        }
+    }
 }

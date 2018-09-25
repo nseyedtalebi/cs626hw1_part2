@@ -4,6 +4,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Counters;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,7 +29,7 @@ public class AppTest {
     @Mock
     private Mapper.Context mockContext;
     @Mock
-    private Counters.Counter mockCounter;
+    private Counter mockCounter;
 
     private IntWritable one = new IntWritable(1);
     private App myApp;
@@ -50,6 +51,7 @@ public class AppTest {
         myReduce = new App.Reduce();
         doNothing().when(mockContext).write(orderedPairCaptor.capture(),any(IntWritable.class));
         doNothing().when(mockContext).write(orderedPairCaptor.capture(),longCaptor.capture());
+        doNothing().when(mockCounter).increment(anyLong());
     }
     public static Stream<Arguments> getMapTestArgs(){
         //LongWritable offset, Text lineText, Mapper.Context context
@@ -77,7 +79,7 @@ public class AppTest {
 
     @ParameterizedTest
     @MethodSource("getReduceTestArgs")
-    public void reduceTest(OrderedPair keyin, Collection<IntWritable> valuesIn,int expectedOutput){
+    public void reduceTest(OrderedPair keyin, Iterable<IntWritable> valuesIn,int expectedOutput){
         myReduce.reduce(keyin, valuesIn, mockContext);
         assertEquals(expectedOutput,(long)longCaptor.getValue());
         assertEquals(keyin,orderedPairCaptor.getValue());
@@ -85,8 +87,8 @@ public class AppTest {
 
     @ParameterizedTest
     @MethodSource("getReduceTestArgs")
-    public void reduceCountersTest(OrderedPair keyin, Collection<IntWritable> valuesIn,int expectedOutput){
+    public void reduceCountersTest(OrderedPair keyin, Iterable<IntWritable> valuesIn,int expectedOutput){
         myReduce.reduce(keyin, valuesIn, mockContext);
-        verify(mockCounter).increment(1);
+        verify(mockCounter,times(1)).increment(1);
     }
 }

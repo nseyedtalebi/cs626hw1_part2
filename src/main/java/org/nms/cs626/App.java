@@ -15,14 +15,12 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.List;
 
 import static org.apache.commons.csv.CSVParser.parse;
 
 public class App extends Configured implements Tool {
-
     private static final Logger LOG = Logger.getLogger(App.class);
 
     public static void main(String[] args) throws Exception {
@@ -37,7 +35,7 @@ public class App extends Configured implements Tool {
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         job.setMapperClass(Map.class);
-       // job.setReducerClass(Reduce.class);
+        job.setReducerClass(Reduce.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
         return job.waitForCompletion(true) ? 0 : 1;
@@ -61,8 +59,13 @@ public class App extends Configured implements Tool {
             ,Collection<IntWritable>
             ,OrderedPair
             ,IntWritable>{
-        public void reduce(OrderedPair keyin, Collection<IntWritable> valueIn,
-                           Mapper.Context mockContext) {
+        static enum CountersEnum {UNIQUE_OUTPUT_PAIRS};
+
+        public void reduce(OrderedPair keyin, Iterable<IntWritable> valueIn,
+                           Context context) {
+            Counter uniquePairCounter = context.getCounter(CountersEnum.class.getName(),
+                    CountersEnum.UNIQUE_OUTPUT_PAIRS.toString());
+            uniquePairCounter.increment(1);
 
         }
     }

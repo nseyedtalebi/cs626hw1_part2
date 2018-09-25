@@ -11,6 +11,8 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 import org.nms.cs626.util.OrderedPair;
 
+import java.io.IOException;
+
 public class App extends Configured implements Tool {
 
     private static final Logger LOG = Logger.getLogger(App.class);
@@ -34,9 +36,9 @@ public class App extends Configured implements Tool {
     }
 
     public static class Map extends Mapper<LongWritable, Text, OrderedPair, IntWritable> {
-        public void map(LongWritable offset, Text lineText, Context context){
-            OrderedPair pair = new OrderedPair(lineText.toString().split(","));
-
+        public void map  (LongWritable offset, Text lineText, Context context)
+                throws IOException, InterruptedException {
+            //TODO: write map method so tests all pass
         }
     }
 

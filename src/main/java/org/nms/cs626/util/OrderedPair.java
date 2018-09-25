@@ -6,9 +6,15 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class OrderedPair {
-    private String left;
-    private String right;
+    /*Marking both public and final. I want the data to be immutable but using getters and setters
+    seems unnecessarily verbose for this.
+     */
+    public final String left;
+    public final String right;
 
+    public static boolean LexicalLessOrEqual(String one, String another){
+        return one.compareTo(another) <= 0;
+    }
 
     public OrderedPair(String first, String second){
         left=first;

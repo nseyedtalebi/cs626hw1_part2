@@ -50,7 +50,7 @@ public class AppTest {
     @ParameterizedTest
     @MethodSource("getMapTestArgs")
     public void mapTest(String inputLine,OrderedPair expected) throws IOException, InterruptedException{
-        //Found useful example of how to do this here:
+        //Found useful example of how to mock mapreduce stuff here:
         //https://www.baeldung.com/mockito-argument-matchers
         ArgumentCaptor<OrderedPair> outputCaptor = ArgumentCaptor.forClass(OrderedPair.class);
         doNothing().when(mockContext).write(outputCaptor.capture(),any(IntWritable.class));

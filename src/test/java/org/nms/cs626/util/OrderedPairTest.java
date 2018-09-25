@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
@@ -19,5 +20,20 @@ public class OrderedPairTest {
         OrderedPair forward = new OrderedPair("a","b");
         OrderedPair reverse = new OrderedPair("b","a");
         assertEquals(reverse,forward.reverse());
+    }
+
+    public Stream<Arguments> getLexicalLEQArgs(){
+        return Stream.of(
+                Arguments.of("a","b",true),
+                Arguments.of("b","a",false),
+                Arguments.of("b","b",true),
+                Arguments.of("a","ab",true),
+                Arguments.of("ab","a",false)
+        );
+    }
+    @ParameterizedTest
+    @MethodSource("getLexicalLEQArgs")
+    public void lexicalLessOrEqualTest(String one, String another, boolean expected){
+        assertEquals(expected,OrderedPair.LexicalLessOrEqual(one,another));
     }
 }

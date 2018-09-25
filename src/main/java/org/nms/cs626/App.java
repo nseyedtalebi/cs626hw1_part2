@@ -10,8 +10,15 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 import org.nms.cs626.util.OrderedPair;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.List;
+
+import static org.apache.commons.csv.CSVParser.parse;
 
 public class App extends Configured implements Tool {
 
@@ -38,7 +45,14 @@ public class App extends Configured implements Tool {
     public static class Map extends Mapper<LongWritable, Text, OrderedPair, IntWritable> {
         public void map  (LongWritable offset, Text lineText, Context context)
                 throws IOException, InterruptedException {
-            //TODO: write map method so tests all pass
+            List<CSVRecord> records =  CSVParser
+                    .parse(lineText.toString(),CSVFormat.DEFAULT)
+                    .getRecords();
+            OrderedPair keyPair = new OrderedPair(records.get(0).get(0), records.get(0).get(1));
+            if(!OrderedPair.LexicalLessOrEqual(keyPair.left,keyPair.right)){
+                keyPair = keyPair.reverse();
+            }
+            context.write(keyPair,new IntWritable(0));
         }
     }
 

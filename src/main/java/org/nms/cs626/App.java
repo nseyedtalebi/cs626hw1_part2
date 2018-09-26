@@ -14,10 +14,8 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 
 public class App extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(App.class);
@@ -28,7 +26,7 @@ public class App extends Configured implements Tool {
     }
 
     public int run(String[] args) throws Exception {
-        Job job = Job.getInstance(getConf(), "hw1_part1");
+        Job job = Job.getInstance(getConf(), "hw1_part2");
         job.setJarByClass(this.getClass());
         // Use TextInputFormat, the default unless job.setInputFormatClass is used
         FileInputFormat.addInputPath(job, new Path(args[0]));
@@ -52,11 +50,19 @@ public class App extends Configured implements Tool {
         }
     }
 
-    public static class Reduce extends Reducer{
+    public static class Reduce extends Reducer<String, IntWritable, String, IntWritable>{
 
         public void reduce(String keyin, Iterable<IntWritable> valueIn,
                            Context context) throws IOException, InterruptedException {
-
+            List<IntWritable> leftCount = new ArrayList<>();
+            List<IntWritable> rightCount = new ArrayList<>();
+            for(IntWritable value:valueIn){
+                if(value.get() == -1) leftCount.add(value);
+                if(value.get() == 1) rightCount.add(value);
+            }
+            if(leftCount.isEmpty() && !rightCount.isEmpty()){
+                context.write(keyin,new IntWritable(rightCount.size()));
+            }
         }
     }
 }

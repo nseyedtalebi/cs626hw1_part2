@@ -9,16 +9,15 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-import org.nms.cs626.util.OrderedPair;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import static org.apache.commons.csv.CSVParser.parse;
 
 public class App extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(App.class);
@@ -41,31 +40,22 @@ public class App extends Configured implements Tool {
         return job.waitForCompletion(true) ? 0 : 1;
     }
 
-    public static class Map extends Mapper<LongWritable, Text, OrderedPair, IntWritable> {
+    public static class Map extends Mapper<LongWritable, Text, String, IntWritable> {
         public void map  (LongWritable offset, Text lineText, Context context)
                 throws IOException, InterruptedException {
             List<CSVRecord> records =  CSVParser
                     .parse(lineText.toString(),CSVFormat.DEFAULT)
                     .getRecords();
-            OrderedPair keyPair = new OrderedPair(records.get(0).get(0), records.get(0).get(1));
-            if(!OrderedPair.LexicalLessOrEqual(keyPair.left,keyPair.right)){
-                keyPair = keyPair.reverse();
-            }
-            context.write(keyPair,new IntWritable(0));
+            CSVRecord inputLine = records.get(0);
+            context.write(inputLine.get(0),new IntWritable(-1));
+            context.write(inputLine.get(1),new IntWritable(1));
         }
     }
 
-    public static class Reduce extends Reducer<OrderedPair
-            ,Collection<IntWritable>
-            ,OrderedPair
-            ,IntWritable>{
-        static enum CountersEnum {UNIQUE_OUTPUT_PAIRS};
+    public static class Reduce extends Reducer{
 
-        public void reduce(OrderedPair keyin, Iterable<IntWritable> valueIn,
-                           Context context) {
-            Counter uniquePairCounter = context.getCounter(CountersEnum.class.getName(),
-                    CountersEnum.UNIQUE_OUTPUT_PAIRS.toString());
-            uniquePairCounter.increment(1);
+        public void reduce(String keyin, Iterable<IntWritable> valueIn,
+                           Context context) throws IOException, InterruptedException {
 
         }
     }

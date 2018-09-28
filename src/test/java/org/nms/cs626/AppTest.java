@@ -36,8 +36,8 @@ public class AppTest {
     //Found useful example of how to mock mapreduce stuff here:
     //https://www.baeldung.com/mockito-argument-matchers
 
-    private ArgumentCaptor<String> mapperOutputStringCaptor = ArgumentCaptor.forClass(String.class);
-    private ArgumentCaptor<String> reducerOutputStringCaptor = ArgumentCaptor.forClass(String.class);
+    private ArgumentCaptor<Text> mapperOutputTextCaptor = ArgumentCaptor.forClass(Text.class);
+    private ArgumentCaptor<Text> reducerOutputTextCaptor = ArgumentCaptor.forClass(Text.class);
     private ArgumentCaptor<IntWritable> mapperOutputIntWritableCaptor = ArgumentCaptor.forClass(IntWritable.class);
     private ArgumentCaptor<IntWritable> reducerOutputIntWritableCaptor = ArgumentCaptor.forClass(IntWritable.class);
 
@@ -53,26 +53,24 @@ public class AppTest {
         myMap = new App.Map();
         myReduce = new App.Reduce();
 
-        doNothing().when(mockMapperContext).write(mapperOutputStringCaptor.capture(), mapperOutputIntWritableCaptor.capture());
-        doNothing().when(mockReducerContext).write(reducerOutputStringCaptor.capture(), reducerOutputIntWritableCaptor.capture());
+        doNothing().when(mockMapperContext).write(mapperOutputTextCaptor.capture(), mapperOutputIntWritableCaptor.capture());
+        doNothing().when(mockReducerContext).write(reducerOutputTextCaptor.capture(), reducerOutputIntWritableCaptor.capture());
     }
 
 
     public static Stream<Arguments> getMapTestArgs(){
-        return Stream.of(Arguments.of("\"C1699312\",\"C1585558\"",Arguments.of("C1699312",negone),Arguments.of("C1585558",one)),
-                         Arguments.of("\"C1585558\",\"C1699312\"",Arguments.of("C1585558",negone),Arguments.of("C1699312",one)),
-                         Arguments.of("\"C2345799\",\"C0718399\"",Arguments.of("C2345799",negone),Arguments.of("C0718399",one))
+        return Stream.of(Arguments.of("\"C1699312\",\"C1585558\"",new MapperOutputPair("C1699312",negone),new MapperOutputPair("C1585558",one)),
+                         Arguments.of("\"C1585558\",\"C1699312\"",new MapperOutputPair("C1585558",negone),new MapperOutputPair("C1699312",one)),
+                         Arguments.of("\"C2345799\",\"C0718399\"",new MapperOutputPair("C2345799",negone),new MapperOutputPair("C0718399",one))
         );
     }
 
     @ParameterizedTest
     @MethodSource("getMapTestArgs")
-    public void mapTest(String inputLine,Arguments firstPairArgs, Arguments secondPairArgs)
+    public void mapTest(String inputLine,MapperOutputPair firstPair, MapperOutputPair secondPair)
             throws IOException, InterruptedException{
-        MapperOutputPair firstPair = new MapperOutputPair(firstPairArgs.get());
-        MapperOutputPair secondPair = new MapperOutputPair(secondPairArgs.get());
         myMap.map(new LongWritable(0),new Text(inputLine), mockMapperContext);
-        List<String> resultKeys = mapperOutputStringCaptor.getAllValues();
+        List<Text> resultKeys = mapperOutputTextCaptor.getAllValues();
         List<IntWritable> resultValues = mapperOutputIntWritableCaptor.getAllValues();
         List<MapperOutputPair> resultPairs = new ArrayList<>();
         for(int i=0;i<2;i++){
@@ -86,20 +84,20 @@ public class AppTest {
 
     public static Stream<Arguments> getReduceTestArgs(){
         return Stream.of(
-                Arguments.of("C1699312", Arrays.asList(negone,one),null,null),
-                Arguments.of("C1585558", Arrays.asList(one,negone),null,null),
-                Arguments.of("C2345799", Arrays.asList(negone),null,null),
-                Arguments.of("C0718399", Arrays.asList(one),"C0718399",one),
-                Arguments.of("C0718399", Arrays.asList(one,one),"C0718399",two)
+                Arguments.of(new Text("C1699312"), Arrays.asList(negone,one),null,null),
+                Arguments.of(new Text("C1585558"), Arrays.asList(one,negone),null,null),
+                Arguments.of(new Text("C2345799"), Arrays.asList(negone),null,null),
+                Arguments.of(new Text("C0718399"), Arrays.asList(one),new Text("C0718399"),one),
+                Arguments.of(new Text("C0718399"), Arrays.asList(one,one),new Text("C0718399"),two)
         );
     }
 
     @ParameterizedTest
     @MethodSource("getReduceTestArgs")
-    public void reduceTest(String keyin, Iterable<IntWritable> valuesIn,String expectedKey,IntWritable expectedValue)
+    public void reduceTest(Text keyin, Iterable<IntWritable> valuesIn,Text expectedKey,IntWritable expectedValue)
     throws IOException, InterruptedException {
         myReduce.reduce(keyin, valuesIn, mockReducerContext);
-        String actualKey = (expectedKey != null) ? reducerOutputStringCaptor.getValue() : null;
+        Text actualKey = (expectedKey != null) ? reducerOutputTextCaptor.getValue() : null;
         IntWritable actualValue = (expectedValue != null) ? reducerOutputIntWritableCaptor.getValue() : null;
         assertEquals(expectedKey, actualKey);
         assertEquals(expectedValue, actualValue);

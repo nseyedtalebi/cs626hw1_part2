@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.nms.cs626</groupId>
-  <artifactId>hw1</artifactId>
+  <artifactId>hw1_2</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>hw1</name>
@@ -57,8 +57,7 @@
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-      <plugins>
+  <plugins>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.0.0</version>
@@ -76,18 +75,20 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.20.1</version>
         </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
-          <configuration>
-            <archive>
-              <manifest>
-                <addClasspath>true</addClasspath>
-                <mainClass>SomeMainClass</mainClass>
-              </manifest>
-            </archive>
-          </configuration>
-        </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-shade-plugin</artifactId>
+      <version>3.1.1</version>
+      <executions>
+        <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>shade</goal>
+          </goals>
+
+        </execution>
+      </executions>
+    </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.5.2</version>
@@ -96,7 +97,6 @@
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.8.2</version>
         </plugin>
-      </plugins>
-    </pluginManagement>
+    </plugins>
   </build>
 </project>

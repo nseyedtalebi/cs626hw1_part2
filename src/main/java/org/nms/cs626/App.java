@@ -38,21 +38,21 @@ public class App extends Configured implements Tool {
         return job.waitForCompletion(true) ? 0 : 1;
     }
 
-    public static class Map extends Mapper<LongWritable, Text, String, IntWritable> {
+    public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
         public void map  (LongWritable offset, Text lineText, Context context)
                 throws IOException, InterruptedException {
             List<CSVRecord> records =  CSVParser
                     .parse(lineText.toString(),CSVFormat.DEFAULT)
                     .getRecords();
             CSVRecord inputLine = records.get(0);
-            context.write(inputLine.get(0),new IntWritable(-1));
-            context.write(inputLine.get(1),new IntWritable(1));
+            context.write(new Text(inputLine.get(0)),new IntWritable(-1));
+            context.write(new Text(inputLine.get(1)),new IntWritable(1));
         }
     }
 
-    public static class Reduce extends Reducer<String, IntWritable, String, IntWritable>{
+    public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable>{
 
-        public void reduce(String keyin, Iterable<IntWritable> valueIn,
+        public void reduce(Text keyin, Iterable<IntWritable> valueIn,
                            Context context) throws IOException, InterruptedException {
             List<IntWritable> leftCount = new ArrayList<>();
             List<IntWritable> rightCount = new ArrayList<>();

@@ -1,15 +1,21 @@
 package org.nms.cs626.util;
 
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 import java.util.Objects;
 
 public class MapperOutputPair {
-    public final String key;
+    public final Text key;
     public final IntWritable value;
 
-    public MapperOutputPair(String key, IntWritable value) {
+    public MapperOutputPair(Text key, IntWritable value){
         this.key = key;
+        this.value = value;
+    }
+
+    public MapperOutputPair(String key, IntWritable value) {
+        this.key = new Text(key);
         this.value = value;
     }
 
@@ -18,7 +24,7 @@ public class MapperOutputPair {
     }
 
     public MapperOutputPair(Object[] args) {
-        key = (String) args[0];
+        key =  (Text)args[0];
         value = (IntWritable) args[1];
     }
 
